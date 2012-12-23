@@ -2,20 +2,112 @@
 #include <stdlib.h>
 #include <math.h>
 #include <conio.h>
+#include <time.h>
 #include <windows.h>
 #define N 9
 int i,j,a[N+1][N+1],message=0;
+clock_t start;
+void fload();
 void display();
+void battlecruiser();
+void deluxe();
 void fnew();
 int main(void)
 {
-    int p1=12,p2=12,x,y,x1,y1,step=0,kills=0,t,f,move=1,attack=1,w,x2,y2;
-    fnew();
-    display();
-    while(1)
+    int p1=12,p2=12,x,y,x1,y1,step=0,kills=0,t,f,move=1,attack=1,w,x2,y2,play,att=0;
+    char flist[65];
+    FILE *fp;
+    deluxe();
+    fload();
+M:  system("cls");
+    if(((x==0) && (y==0)) || (att>20))
+        printf("\nCONTINUE - press 36\n");
+    else
+        fnew();
+    printf("\nNEW GAME - press any number\n");
+    if((x==0) && (y==0))
+        printf("\nSAVE GAME - press 116\n");
+    printf("\nLOAD GAME - press -1\n"
+           "\nEXIT - press 0\n"
+           "\nyour choice: ");
+    scanf("%d",&play);
+    if((x==0) && (y==0) && (play==116))
+        goto SAVE;
+    if(att>20)
+    {
+        getchar();
+        printf("\nERROR in the input date\nprogram have to be closed\n"
+               "the information with wich you will be able to continue\n"
+               "this game will be saved in the text document\n");
+        getchar();
+SAVE:   fp=fopen("deluxe.txt","w");
+        getchar();
+        t=0;
+        for(i=1;i<N;i++)
+            for(j=1;j<N;j++)
+            {
+                if(a[i][j]==11)
+                    flist[t]='1';
+                if(a[i][j]==22)
+                    flist[t]='2';
+                if(a[i][j]==10)
+                    flist[t]='3';
+                if(a[i][j]==20)
+                    flist[t]='4';
+                if(a[i][j]==0)
+                    flist[t]='0';
+                t=t+1;
+            }
+        flist[65]='\0';
+        fputs(flist,fp);
+        fclose(fp);
+        printf("\ngame saved, press ENTER to finish\n");
+        getch();
+        if(att>20)
+            return 0;
+        goto M;
+    }
+    printf("\n\n");
+    if(play==-1)
+    {
+        if((fp=fopen("deluxe.txt","r"))==NULL)
+        {
+            printf("\nyou have not saved games\n");
+            getch();
+            goto M;
+        }
+        t=0;
+        fgets(flist,66,fp);
+        for(i=1;i<N;i++)
+            for(j=1;j<N;j++)
+            {
+                if(flist[t]=='1')
+                    a[i][j]=11;
+                if(flist[t]=='2')
+                    a[i][j]=22;
+                if(flist[t]=='3')
+                    a[i][j]=10;
+                if(flist[t]=='4')
+                    a[i][j]=20;
+                if(flist[t]=='0')
+                    a[i][j]=0;
+                t=t+1;
+            }
+        step=flist[64]-'0';
+        fclose(fp);
+    }
+    if((play!=36) && (play!=-1) && (x==0) && (y==0))
+    {
+        fnew();
+        step=0;
+    }
+    if(play)
+        display();
+    while(play)
     {
         while(step==0)
         {
+            flist[64]='0';
             w=0;
             move=1;
             attack=1;
@@ -30,10 +122,26 @@ int main(void)
                 printf("\nplayer 1,you have %d checkers\nchoose your checker\n",p1);
                 scanf("%d%d",&x,&y);
             }
+            att++;
+            if(att>20)
+            {
+                printf("\nerror\n");
+                goto M;
+                flist[64]='0';
+            }
+            if((x==0) && (y==0))
+                goto M;
             if(a[x][y]==11)
             {
 M11:            printf("\nmove your checker\n");
                 scanf("%d%d",&x1,&y1);
+                att++;
+                if(att>20)
+                {
+                    printf("\nerror\n");
+                    flist[64]='0';
+                    goto M;
+                }
                 if((x-x1==1) && (abs(y1-y)==1) && (a[x1][y1]==0))
                 {
                     for(i=1;i<N;i++)
@@ -173,6 +281,13 @@ M11:            printf("\nmove your checker\n");
                 {
 M10:                printf("\nmove your damka\n");
                     scanf("%d%d",&x1,&y1);
+                    att++;
+                    if(att>20)
+                    {
+                        printf("\nerror\n");
+                        flist[64]='0';
+                        goto M;
+                    }
                     if((abs(x1-x)==abs(y1-y)) && (a[x1][y1]==0))
                     {
                          if((x1>x) && (y1>y))
@@ -397,6 +512,7 @@ M10:                printf("\nmove your damka\n");
         p2=0;
         step=0;
         kills=0;
+        att=0;
         for(i=1;i<N;i++)
             for(j=1;j<N;j++)
                 if((a[i][j]==11) || (a[i][j]==10))
@@ -409,6 +525,7 @@ M10:                printf("\nmove your damka\n");
 //_______________________________________________________________________________________
      while(step==0)
         {
+            flist[64]='1';
             w=0;
             move=1;
             attack=1;
@@ -424,10 +541,29 @@ M10:                printf("\nmove your damka\n");
                 printf("\nplayer 2,you have %d checkers\nchoose your checker\n",p2);
                 scanf("%d%d",&x,&y);
             }
+            att++;
+            if(att>20)
+            {
+                printf("\nerror\n");
+                flist[64]='1';
+                goto M;
+            }
+            if((x==0) && (y==0))
+            {
+                step=-1;
+                goto M;
+            }
             if(a[x][y]==22)
             {
 M22:            printf("\nmove your checker\n");
                 scanf("%d%d",&x1,&y1);
+                att++;
+                if(att>20)
+                {
+                    printf("\nerror\n");
+                    flist[64]='1';
+                    goto M;
+                }
                 if((x1-x==1) && (abs(y1-y)==1) && (a[x1][y1]==0))
                 {
 
@@ -568,6 +704,13 @@ M22:            printf("\nmove your checker\n");
                 {
 M20:                printf("\nmove your damka\n");
                     scanf("%d%d",&x1,&y1);
+                    att++;
+                    if(att>20)
+                    {
+                        printf("\nerror\n");
+                        flist[64]='1';
+                        goto M;
+                    }
                     if((abs(x1-x)==abs(y1-y)) && (a[x1][y1]==0))
                     {
                          if((x1>x) && (y1>y))
@@ -791,6 +934,7 @@ M20:                printf("\nmove your damka\n");
         p2=0;
         kills=0;
         step=0;
+        att=0;
         message=0;
         for(i=1;i<N;i++)
             for(j=1;j<N;j++)
@@ -802,16 +946,24 @@ M20:                printf("\nmove your damka\n");
         if((p1==0) || (p2==0))
             break;
     }
-    if(p1==0)
+    if((p1==0) && (play))
     {
+        start=clock();
+        while(clock()-start<3*CLOCKS_PER_SEC);
+        battlecruiser();
         printf("PLAYER 2, YOU HAVE WON THE MATCH!\n");
     }
-    if(p2==0)
+    if((p2==0) && (play))
     {
+        start=clock();
+        while(clock()-start<3*CLOCKS_PER_SEC);
+        battlecruiser();
         printf("PLAYER 1, YOU HAVE WON THE MATCH!\n");
     }
+    if(play==0)
+        return 0;
     getch();
-    return 0;
+    goto M;
 }
 void display()
 {
@@ -844,6 +996,87 @@ void display()
     }
     if(message)
         printf("you had to destroy enemy chacker... your checker [%d %d] disappeared\n",message%10,message/10);
+}
+float sec=0.075;
+clock_t delay=sec*CLOCKS_PER_SEC;
+void fload()
+{
+    clock_t start=clock();
+    while(clock()-start<delay);
+    printf(" C H E C K E R S   D E L U X E   G A M E\n");
+    printf(" _______________________________________\n ");
+    for(i=0;i<39;i++)
+    {
+    clock_t start=clock();
+    while(clock()-start<delay);
+        printf("%c",'\333');
+    }
+    printf("\npress ENTER to begin");
+    getch();
+}
+void battlecruiser()
+{
+    static int b[8][12];
+    int sp=1,k,space=0;
+    for(i=0;i<16;i++)
+        for(j=0;j<12;j++)
+        {
+            if(((i==0) || (i==7)) && (j<=7))
+                b[i][j]=1;
+            if((((i>=1) && (i<=2)) || ((i>=5) && (i<=6))) && (((j>=3) && (j<=4)) || (j==10)))
+                b[i][j]=1;
+            if((i>=3) && (i<=4))
+                b[i][j]=1;
+        }
+    system("cls");
+    printf("\n\n\n\n\n");
+    j=10;
+    for(sp=1;sp<70;sp++)
+    {
+        if(sp>12)
+            space=space+1;
+        for(k=1;k<=space;k++)
+            printf(" ");
+        if(sp>50)
+            for(i=0,j=12+50-sp;i<8;i++)
+                b[i][j]=0;
+        for(i=0;i<8;i++)
+        {
+            if(j!=0)
+                j=12-sp;
+            if(sp>=12)
+                j=0;
+            for(;j<12;j++)
+                if(b[i][j]==1)
+                    printf("%c",'\333');
+                else
+                    printf(" ");
+            printf("\n");
+            for(k=1;k<=space;k++)
+                printf(" ");
+        }
+        system("cls");
+        printf("\n\n\n\n");
+        clock_t start=clock();
+        while(clock()-start<delay);
+    }
+    printf("\n");
+    getchar();
+}
+void deluxe()
+{
+    printf(" %c%c%c   %c%c%c%c%c %c     %c    %c %c      %c %c%c%c%c%c",'\333','\333','\333','\333','\333','\333','\333','\333'
+           ,'\333','\333','\333','\333','\333','\333','\333','\333','\333','\333');
+    printf("\n %c  %c  %c     %c     %c    %c  %c    %c  %c\n",'\333','\333','\333','\333','\333','\333','\333','\333','\333');
+    printf(" %c   %c %c     %c     %c    %c   %c  %c   %c\n",'\333','\333','\333','\333','\333','\333','\333','\333','\333');
+    printf(" %c   %c %c%c%c%c%c %c     %c    %c    %c%c    %c%c%c%c%c\n",'\333','\333','\333','\333','\333','\333','\333'
+           ,'\333','\333','\333','\333','\333','\333','\333','\333','\333','\333');
+    printf(" %c   %c %c     %c     %c    %c    %c%c    %c\n",'\333','\333','\333','\333','\333','\333','\333','\333','\333');
+    printf(" %c   %c %c     %c     %c    %c   %c  %c   %c\n",'\333','\333','\333','\333','\333','\333','\333','\333','\333');
+    printf(" %c   %c %c     %c     %c    %c  %c    %c  %c\n",'\333','\333','\333','\333','\333','\333','\333','\333','\333');
+    printf(" %c%c%c%c  %c%c%c%c%c %c%c%c%c%c  %c%c%c%c  %c      %c %c%c%c%c%c\n\n",'\333','\333','\333','\333','\333','\333','\333'
+           ,'\333','\333','\333','\333','\333','\333','\333','\333','\333','\333','\333','\333','\333','\333','\333','\333'
+           ,'\333','\333');
 }
 void fnew()
 {
